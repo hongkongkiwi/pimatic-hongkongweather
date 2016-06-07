@@ -1,0 +1,30 @@
+{
+  "name": "pimatic-hongkongweather",
+  "description": "pimatic plugin to get weather information from Hong Kong Observatory. Including temperature, humidity, pollution data and storm warnings.",
+  "author": "Andy Savage <andy@savage.hk> (http://www.github.com/hongkongkiwi)",
+  "main": "hongkongweather",
+  "files": [
+    "hongkongweather.coffee",
+    "README.md",
+    "LICENSE",
+    "hongkongweather-config-schema.coffee",
+    "device-config-schema.coffee.coffee"
+  ],
+  "version": "1.0.0",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hongkongkiwi/pimatic-hongkongweather.git"
+  },
+  "configSchema": "hongkongweather-config-schema.coffee",
+  "dependencies": {
+    "hko-scraper": "git+https://github.com/hongkongkiwi/hko-scraper.git"
+  },
+  "peerDependencies": {
+    "pimatic": "0.8.*"
+  },
+  "engines": {
+    "node": ">0.8.x",
+    "npm": ">1.1.x"
+  }
+}
