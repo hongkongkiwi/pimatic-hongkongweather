@@ -14,11 +14,11 @@ module.exports = (env) ->
   # To require modules that are included in pimatic use `env.require`. For available packages take
   # a look at the dependencies section in pimatics package.json
 
-  # Require the  bluebird promise library
-  Promise = env.require 'bluebird'
 
   # Require the [cassert library](https://github.com/rhoot/cassert).
   assert = env.require 'cassert'
+
+  hko = require "hko-scraper"
 
   # Include you own depencies with nodes global require function:
   #
@@ -44,10 +44,65 @@ module.exports = (env) ->
 
       deviceConfigDef = require("./device-config-schema")
 
+      @framework.deviceManager.registerDeviceClass("HKWeatherDevice", {
+        configDef: deviceConfigDef.HKWeatherDevice,
+        createCallback: (config) => new HKWeatherDevice(config)
+      })
 
+  class HKWeatherDevice extends env.devices.Device
+    attributes:
+      temperature:
+        description: "Regional Temperature"
+        type: "number"
+        unit: '°C'
+      humidity:
+        description: "Regional Humidity"
+        type: "number"
+        unit: '%'
+      uvIndex:
+        description: "UV Index"
+        type: "number"
+        unit: ''
+      uvIntensity:
+        description: "UV Intensity"
+        type: "string"
+
+    constructor: (@config) ->
+      @id = config.id
+      @name = config.name
+      @weatherStation = config.weatherStation
+      @interval = config.interval
+      super()
+
+      @requestWeather()
+      setInterval(@requestWeather, @interval)
+
+    requestWeather: () =>
+      return @_currentRequest = hko.getWeather().then( (weather) =>
+        @emit "temperature", Number weather.degrees_c
+        @emit "humidity", Number weather.humidity_pct
+        @emit "uvIndex", Number weather.uv_index
+        @emit "uvIntensity", String weather.uv_intensity
+        #@emit "status", weathe
+        #@emit "windspeed", Number results[0].current.windspeed
+        return weather
+      ).catch( (error) =>
+        env.logger.error(error.message)
+        env.logger.debug(error)
+      )
+
+    getTemperature: -> @_currentRequest.then( (weather) => Number weather.degrees_c )
+    getHumidity: -> @_currentRequest.then( (weather) => Number weather.humidity_pct )
+    getUvIndex: -> @_currentRequest.then( (weather) => Number weather.uv_index )
+    getUvIntensity: -> @_currentRequest.then( (weather) => String weather.uv_intensity )
+    #getWindspeed : -> @_currentRequest.then( (weather) => Number weather.current.windspeed )
 
   # ###Finally
   # Create a instance of my plugin
   hongKongWeatherPlugin = new HongKongWeatherPlugin
+
+  # For testing...
+  hongKongWeatherPlugin.HKWeatherDevice = HKWeatherDevice
+
   # and return it to the framework.
   return hongKongWeatherPlugin
