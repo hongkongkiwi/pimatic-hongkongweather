@@ -18,7 +18,7 @@
   },
   "configSchema": "hongkongweather-config-schema.coffee",
   "dependencies": {
-    "hko-scraper": "git+https://github.com/hongkongkiwi/hko-scraper.git"
+    "hko-weather": "git+https://github.com/hongkongkiwi/node-hko-weather.git"
   },
   "peerDependencies": {
     "pimatic": "0.8.*"
