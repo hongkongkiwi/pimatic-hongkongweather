@@ -6,11 +6,11 @@ module.exports = {
     properties:
       weatherStation:
         description: "string of the weather station"
-        format: String
+        type: "string"
         default: ""
       interval:
         description: "the delay between polls of weather server"
-        format: Number
+        type: "integer"
         default: "5000"
   }
 }
