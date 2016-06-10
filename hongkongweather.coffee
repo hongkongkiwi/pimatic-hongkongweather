@@ -18,7 +18,8 @@ module.exports = (env) ->
   # Require the [cassert library](https://github.com/rhoot/cassert).
   assert = env.require 'cassert'
 
-  hko = require "hko-scraper"
+  HongKongWeather = require "hongkong-weather"
+  hko = new HongKongWeather()
 
   # Include you own depencies with nodes global require function:
   #
@@ -55,34 +56,43 @@ module.exports = (env) ->
         description: "Regional Temperature"
         type: "number"
         unit: '°C'
+        acronym: 'T'
       humidity:
-        description: "Regional Humidity"
+        description: "Relative Humidity"
         type: "number"
         unit: '%'
+        acronym: 'RH'
       uvIndex:
         description: "UV Index"
         type: "number"
-        unit: ''
+        acronym: 'UVidx'
       uvIntensity:
         description: "UV Intensity"
         type: "string"
+        acronym: 'UVint'
+
 
     constructor: (@config) ->
-      @id = config.id
-      @name = config.name
-      @weatherStation = config.weatherStation
-      @interval = config.interval
+      @id = @config.id
+      @name = @config.name
+      @weatherStation = @config.weatherStation
+      @interval = @config.interval
       super()
 
       @requestWeather()
-      setInterval(@requestWeather, @interval)
+      @intervalTimerid = setInterval(@requestWeather, @interval)
+
+    destroy: () ->
+      clearInterval @intervalTimerid if @intervalTimerid?
+      super()
 
     requestWeather: () =>
-      return @_currentRequest = hko.getWeather().then( (weather) =>
-        @emit "temperature", Number weather.degrees_c
-        @emit "humidity", Number weather.humidity_pct
-        @emit "uvIndex", Number weather.uv_index
-        @emit "uvIntensity", String weather.uv_intensity
+      return @_currentRequest = hko.getCurrent().then( (weather) =>
+        console.log weather
+        @emit "temperature", Number weather.regional.degrees_c
+        @emit "humidity", Number weather.regional.humidity_pct
+        @emit "uvIndex", Number weather.regional.uv_index if weather.regional.uv_index?
+        @emit "uvIntensity", String weather.regional.uv_intensity if weather.regional.uv_intensity?
         #@emit "status", weathe
         #@emit "windspeed", Number results[0].current.windspeed
         return weather
@@ -91,10 +101,10 @@ module.exports = (env) ->
         env.logger.debug(error)
       )
 
-    getTemperature: -> @_currentRequest.then( (weather) => Number weather.degrees_c )
-    getHumidity: -> @_currentRequest.then( (weather) => Number weather.humidity_pct )
-    getUvIndex: -> @_currentRequest.then( (weather) => Number weather.uv_index )
-    getUvIntensity: -> @_currentRequest.then( (weather) => String weather.uv_intensity )
+    getTemperature: -> @_currentRequest.then( (weather) => Number weather.regional.degrees_c )
+    getHumidity: -> @_currentRequest.then( (weather) => Number weather.regional.humidity_pct )
+    getUvIndex: -> @_currentRequest.then( (weather) => Number weather.regional.uv_index )
+    getUvIntensity: -> @_currentRequest.then( (weather) => String weather.regional.uv_intensity )
     #getWindspeed : -> @_currentRequest.then( (weather) => Number weather.current.windspeed )
 
   # ###Finally
