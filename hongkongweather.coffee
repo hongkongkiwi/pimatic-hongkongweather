@@ -88,7 +88,6 @@ module.exports = (env) ->
 
     requestWeather: () =>
       return @_currentRequest = hko.getCurrent().then( (weather) =>
-        console.log weather
         @emit "temperature", Number weather.regional.degrees_c
         @emit "humidity", Number weather.regional.humidity_pct
         @emit "uvIndex", Number weather.regional.uv_index if weather.regional.uv_index?
